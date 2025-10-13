@@ -1,13 +1,15 @@
 # syntax=docker/dockerfile:1
 
-FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
+FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /app
-COPY pom.xml .
 COPY src ./src
-RUN mvn -B -DskipTests package
+RUN mkdir -p out && \
+    find src/main/java -name "*.java" > sources.txt && \
+    javac @sources.txt -d out
+RUN jar --create --file app.jar --main-class com.cryptoflow.CryptoFlowBackendApplication -C out .
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/app.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

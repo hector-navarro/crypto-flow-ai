@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 public record PriceUpdate(
-        String pair,
+        String symbol,
         BigDecimal price,
-        BigDecimal change24h,
+        BigDecimal changePercent,
         Instant timestamp
 ) {
 }
