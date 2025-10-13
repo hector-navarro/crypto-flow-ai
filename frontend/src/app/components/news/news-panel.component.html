@@ -1,0 +1,16 @@
+<aside class="card news-panel">
+  <header>
+    <h2>Noticias destacadas</h2>
+    <p>Actualizaciones automáticas cada pocos segundos</p>
+  </header>
+  <ul>
+    <li *ngFor="let item of news; trackBy: trackById">
+      <div class="headline">{{ item.title }}</div>
+      <p class="summary">{{ item.summary }}</p>
+      <div class="meta">
+        <span>{{ item.source }}</span>
+        <time>{{ item.publishedAt | date:'shortTime' }}</time>
+      </div>
+    </li>
+  </ul>
+</aside>

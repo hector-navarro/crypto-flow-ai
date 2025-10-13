@@ -1,0 +1,18 @@
+<div class="app-shell" [class.dark-mode]="currentTheme === 'dark'">
+  <header class="app-header">
+    <div class="branding">
+      <span class="logo">₿</span>
+      <div>
+        <h1>{{ title }}</h1>
+        <p>Monitor de criptomonedas en tiempo real</p>
+      </div>
+    </div>
+    <button type="button" class="button" (click)="toggleTheme()">
+      {{ currentTheme === 'dark' ? 'Modo día' : 'Modo noche' }}
+    </button>
+  </header>
+
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

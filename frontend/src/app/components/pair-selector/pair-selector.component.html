@@ -1,0 +1,9 @@
+<div class="selector">
+  <label class="selector-label">Pares (máx. {{ maxPairs }})</label>
+  <select [formControl]="control" multiple>
+    <option *ngFor="let pair of pairs" [ngValue]="pair.quote">
+      {{ pair.label }}
+    </option>
+  </select>
+  <small class="helper-text">Selecciona hasta seis criptomonedas para comparar</small>
+</div>

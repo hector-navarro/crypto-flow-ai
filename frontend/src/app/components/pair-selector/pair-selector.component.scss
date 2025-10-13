@@ -1,0 +1,24 @@
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 220px;
+}
+
+.selector-label {
+  font-weight: 600;
+}
+
+select {
+  min-height: 160px;
+  border-radius: 14px;
+  border: 1px solid var(--app-border-color);
+  padding: 0.5rem;
+  background: var(--app-card-background);
+  color: var(--app-text-color);
+  font-size: 0.95rem;
+}
+
+.helper-text {
+  color: var(--app-muted-text);
+}
