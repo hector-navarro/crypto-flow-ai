@@ -1,5 +1,5 @@
 export interface CryptoPair {
-  /** CoinGecko identifier for the asset */
+  /** Identifier for the asset used across market data providers */
   id: string;
   /** Quoted currency for the market (USD by default) */
   base: string;
