@@ -1,9 +1,19 @@
 <div class="selector">
-  <label class="selector-label">Pares (máx. {{ maxPairs }})</label>
-  <select [formControl]="control" multiple>
-    <option *ngFor="let pair of pairs" [ngValue]="pair.quote">
-      {{ pair.label }}
-    </option>
-  </select>
-  <small class="helper-text">Selecciona hasta seis criptomonedas para comparar</small>
+  <label class="selector-label">Pares en seguimiento</label>
+  <p class="selector-helper">Selecciona hasta {{ maxPairs }} mercados simultáneos para la comparación.</p>
+  <div class="selector-control">
+    <select [formControl]="control" multiple>
+      <option *ngFor="let pair of pairs" [ngValue]="pair.quote">
+        {{ pair.label }}
+      </option>
+    </select>
+    <span class="selector-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </div>
+  <div class="selection-chips" *ngIf="(control.value?.length ?? 0) > 0">
+    <span class="chip" *ngFor="let quote of control.value">
+      {{ getLabel(quote) }}
+    </span>
+  </div>
 </div>
