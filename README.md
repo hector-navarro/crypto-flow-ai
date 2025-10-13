@@ -53,6 +53,17 @@ La aplicación puede publicarse automáticamente en GitHub Pages mediante el flu
 3. Haz push de la rama `main` o ejecuta manualmente el flujo desde **Actions → Deploy to GitHub Pages**.
 4. El sitio quedará disponible en `https://<tu-usuario>.github.io/<nombre-del-repo>/`.
 
+#### Lanzar manualmente el despliegue preparado
+
+Si ya existen cambios listos en la rama `main` y solo necesitas disparar el despliegue:
+
+1. Abre la pestaña **Actions** en GitHub.
+2. Selecciona el flujo **Deploy to GitHub Pages**.
+3. Pulsa **Run workflow** (es posible elegir la rama, por defecto será `main`).
+4. Espera a que termine la ejecución; la URL de la página se mostrará al final del job `deploy`.
+
+> También puedes usar la CLI de GitHub: `gh workflow run deploy.yml`.
+
 ## Arquitectura
 - **Backend:** Java 17, Spring Boot 3, WebFlux para SSE.
 - **Frontend:** Angular 17, ng2-charts + Chart.js para visualizaciones.
