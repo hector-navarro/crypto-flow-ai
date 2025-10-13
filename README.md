@@ -45,6 +45,14 @@ Ubicado en `frontend/`.
 
 > **Nota:** En entornos sin acceso a internet será necesario contar con un mirror de dependencias de npm.
 
+### Despliegue en GitHub Pages
+La aplicación puede publicarse automáticamente en GitHub Pages mediante el flujo de trabajo incluido en `.github/workflows/deploy.yml`.
+
+1. Actualiza el script `build:gh-pages` en `frontend/package.json` si tu repositorio no se llama `crypto-flow-ai` (el valor de `--base-href` debe coincidir con `/<nombre-del-repo>/`).
+2. En GitHub, ve a **Settings → Pages** y selecciona "GitHub Actions" como fuente.
+3. Haz push de la rama `main` o ejecuta manualmente el flujo desde **Actions → Deploy to GitHub Pages**.
+4. El sitio quedará disponible en `https://<tu-usuario>.github.io/<nombre-del-repo>/`.
+
 ## Arquitectura
 - **Backend:** Java 17, Spring Boot 3, WebFlux para SSE.
 - **Frontend:** Angular 17, ng2-charts + Chart.js para visualizaciones.
