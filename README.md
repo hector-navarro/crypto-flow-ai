@@ -21,6 +21,22 @@ mvn spring-boot:run
 ```
 La API queda disponible en `http://localhost:8080`.
 
+### Despliegue automatizado (Docker + GitHub Container Registry)
+
+El repositorio incluye un flujo de GitHub Actions (`.github/workflows/deploy-backend.yml`) que construye una imagen Docker del backend y la publica en GitHub Container Registry.
+
+1. Habilita GitHub Packages en tu organización o cuenta personal (no requiere configuración adicional si usas el repositorio actual).
+2. En cada `push` a la rama `main` (o ejecutando el workflow manualmente) se construirá la imagen a partir del `Dockerfile` ubicado en `backend/`.
+3. El flujo realizará las pruebas de Maven, construirá la imagen y la subirá a `ghcr.io/<tu-usuario>/crypto-flow-backend` etiquetada con la rama, tag o `sha` correspondiente.
+4. Para desplegar en tu plataforma preferida (Render, Railway, Fly.io, etc.) únicamente debes referenciar la imagen publicada o descargarla mediante `docker pull`.
+
+Si necesitas autenticación manual, ejecuta (reemplaza `<TOKEN>` por un PAT con permiso `read:packages`):
+
+```bash
+echo "<TOKEN>" | docker login ghcr.io -u <tu-usuario> --password-stdin
+docker pull ghcr.io/<tu-usuario>/crypto-flow-backend:main
+```
+
 ## Frontend (Angular)
 
 Ubicado en `frontend/`.
