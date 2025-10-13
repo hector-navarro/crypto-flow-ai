@@ -30,7 +30,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   latestPoints = new Map<string, PricePoint>();
   labels: string[] = [];
   connectionStatus: 'connecting' | 'live' | 'error' = 'connecting';
-  connectionMessage = 'Sincronizando datos con CoinGecko…';
+  connectionMessage = 'Sincronizando datos del mercado…';
   private historySubscription?: Subscription;
   private autoRefreshSubscription?: Subscription;
   private retrySubscription?: Subscription;
@@ -88,7 +88,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       error: () => {
         this.loading = false;
         this.connectionStatus = 'error';
-        this.connectionMessage = 'No fue posible conectar con CoinGecko.';
+        this.connectionMessage = 'No fue posible conectar con los proveedores de mercado.';
         this.errorMessage = 'No fue posible recuperar la lista de activos disponibles.';
       }
     });
@@ -113,7 +113,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = undefined;
     this.connectionStatus = 'connecting';
-    this.connectionMessage = 'Preparando datos del mercado desde CoinGecko…';
+    this.connectionMessage = 'Preparando datos del mercado desde los proveedores disponibles…';
     this.selectedIds.forEach(id => this.priceHistory.set(id, []));
     this.updateDatasets();
   }
@@ -131,7 +131,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     const requests = this.selectedIds.map(id => this.cryptoDataService.getMarketChart(id));
     this.connectionStatus = 'connecting';
-    this.connectionMessage = 'Actualizando datos desde CoinGecko…';
+    this.connectionMessage = 'Actualizando datos del mercado…';
 
     this.historySubscription = forkJoin(requests).subscribe({
       next: seriesCollection => {
@@ -159,15 +159,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.errorMessage = undefined;
         this.connectionStatus = 'live';
-        this.connectionMessage = 'Datos obtenidos de CoinGecko';
+        this.connectionMessage = 'Datos obtenidos de los proveedores de mercado';
         this.updateDatasets();
         this.startAutoRefresh();
       },
       error: () => {
         this.loading = false;
-        this.errorMessage = 'No fue posible obtener datos de mercado desde CoinGecko.';
+        this.errorMessage = 'No fue posible obtener datos de mercado desde los proveedores disponibles.';
         this.connectionStatus = 'error';
-        this.connectionMessage = 'Sin conexión con CoinGecko. Reintentando…';
+        this.connectionMessage = 'Sin conexión con los proveedores de mercado. Reintentando…';
         this.scheduleRetry();
       }
     });
@@ -226,11 +226,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
             });
           });
           this.connectionStatus = 'live';
-          this.connectionMessage = 'Datos obtenidos de CoinGecko';
+          this.connectionMessage = 'Datos obtenidos de los proveedores de mercado';
         },
         error: () => {
           this.connectionStatus = 'error';
-          this.connectionMessage = 'Dificultad para refrescar datos desde CoinGecko.';
+          this.connectionMessage = 'Dificultad para refrescar datos desde los proveedores de mercado.';
         }
       });
   }
