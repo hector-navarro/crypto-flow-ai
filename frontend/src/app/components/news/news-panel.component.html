@@ -11,7 +11,7 @@
     </span>
   </header>
 
-  <div class="state" *ngIf="loading">Generando titulares personalizados…</div>
+  <div class="state" *ngIf="loading">Consultando titulares de CryptoCompare…</div>
   <div class="state error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
 
   <ul *ngIf="!loading && !errorMessage" class="news-list">

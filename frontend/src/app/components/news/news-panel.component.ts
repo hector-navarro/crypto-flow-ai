@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, timer, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { CryptoDataService } from '../../services/crypto-data.service';
 import { NewsItem } from '../../models/news-item.model';
 
@@ -13,9 +14,8 @@ export class NewsPanelComponent implements OnInit, OnDestroy {
   loading = true;
   errorMessage?: string;
   connectionStatus: 'connecting' | 'live' | 'error' = 'connecting';
-  connectionMessage = 'Sincronizando titulares…';
+  connectionMessage = 'Sincronizando titulares desde CryptoCompare…';
   private subscription?: Subscription;
-  private reconnectTimeout?: ReturnType<typeof setTimeout>;
 
   constructor(private readonly cryptoDataService: CryptoDataService) {}
 
@@ -25,9 +25,6 @@ export class NewsPanelComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-    }
   }
 
   trackById(_: number, item: NewsItem): string {
@@ -36,32 +33,36 @@ export class NewsPanelComponent implements OnInit, OnDestroy {
 
   private subscribeToNews(): void {
     this.subscription?.unsubscribe();
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-    }
     this.loading = this.news.length === 0;
     this.errorMessage = undefined;
     this.connectionStatus = 'connecting';
-    this.connectionMessage = 'Sincronizando titulares…';
+    this.connectionMessage = 'Sincronizando titulares desde CryptoCompare…';
 
-    this.subscription = this.cryptoDataService.streamNews().subscribe({
-      next: items => {
+    this.subscription = timer(0, 300000)
+      .pipe(
+        switchMap(() =>
+          this.cryptoDataService.getNews().pipe(
+            catchError(() => {
+              if (this.news.length === 0) {
+                this.errorMessage = 'No fue posible obtener titulares desde CryptoCompare.';
+              }
+              this.loading = false;
+              this.connectionStatus = 'error';
+              this.connectionMessage = 'Error al contactar CryptoCompare. Reintentando…';
+              return of<NewsItem[] | null>(null);
+            })
+          )
+        )
+      )
+      .subscribe(items => {
+        if (!items) {
+          return;
+        }
         this.news = items;
         this.loading = false;
         this.errorMessage = undefined;
         this.connectionStatus = 'live';
-        this.connectionMessage = 'Flujo de noticias activo';
-      },
-      error: () => {
-        if (this.news.length === 0) {
-          this.errorMessage = 'No es posible conectar con las noticias en vivo. Verifica el backend.';
-        }
-        this.loading = false;
-        this.connectionStatus = 'error';
-        this.connectionMessage = 'Sin conexión con el backend. Reintentando…';
-        this.subscription = undefined;
-        this.reconnectTimeout = setTimeout(() => this.subscribeToNews(), 5000);
-      }
-    });
+        this.connectionMessage = 'Fuente: CryptoCompare (actualización periódica)';
+      });
   }
 }

@@ -3,7 +3,7 @@
   <p class="selector-helper">Selecciona hasta {{ maxPairs }} mercados simultáneos para la comparación.</p>
   <div class="selector-control">
     <select [formControl]="control" multiple>
-      <option *ngFor="let pair of pairs" [ngValue]="pair.quote">
+      <option *ngFor="let pair of pairs" [ngValue]="pair.id">
         {{ pair.label }}
       </option>
     </select>

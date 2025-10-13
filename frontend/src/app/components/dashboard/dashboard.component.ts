@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { Subscription, forkJoin, timer } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { CryptoDataService } from '../../services/crypto-data.service';
 import { CryptoPair } from '../../models/crypto-pair.model';
 import { PricePoint } from '../../models/price-point.model';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
-import { Subscription } from 'rxjs';
-import { BaseChartDirective } from 'ng2-charts';
 
 interface ChartSeries {
   label: string;
@@ -24,14 +25,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading = true;
   errorMessage?: string;
   availablePairs: CryptoPair[] = [];
-  selectedQuotes: string[] = [];
+  selectedIds: string[] = [];
   priceHistory = new Map<string, number[]>();
   latestPoints = new Map<string, PricePoint>();
   labels: string[] = [];
   connectionStatus: 'connecting' | 'live' | 'error' = 'connecting';
-  connectionMessage = 'Sincronizando datos en vivo…';
-  private priceSubscription?: Subscription;
-  private reconnectTimeout?: ReturnType<typeof setTimeout>;
+  connectionMessage = 'Sincronizando datos con CoinGecko…';
+  private historySubscription?: Subscription;
+  private autoRefreshSubscription?: Subscription;
+  private retrySubscription?: Subscription;
 
   lineChartData: ChartData<'line'> = {
     datasets: []
@@ -79,30 +81,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cryptoDataService.getPairs().subscribe({
       next: pairs => {
         this.availablePairs = pairs;
-        this.selectedQuotes = pairs.slice(0, 3).map(pair => pair.quote);
+        this.selectedIds = pairs.slice(0, 3).map(pair => pair.id);
         this.initializeHistory();
-        this.subscribeToPrices();
+        this.loadMarketData();
       },
       error: () => {
         this.loading = false;
         this.connectionStatus = 'error';
-        this.connectionMessage = 'Sin conexión con el backend. Verifica que esté desplegado.';
-        this.errorMessage = 'No fue posible recuperar la lista de pares disponibles.';
+        this.connectionMessage = 'No fue posible conectar con CoinGecko.';
+        this.errorMessage = 'No fue posible recuperar la lista de activos disponibles.';
       }
     });
   }
 
   ngOnDestroy(): void {
-    this.priceSubscription?.unsubscribe();
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-    }
+    this.historySubscription?.unsubscribe();
+    this.autoRefreshSubscription?.unsubscribe();
+    this.retrySubscription?.unsubscribe();
   }
 
-  onSelectionChange(quotes: string[]): void {
-    this.selectedQuotes = quotes;
+  onSelectionChange(ids: string[]): void {
+    this.selectedIds = ids;
     this.initializeHistory();
-    this.subscribeToPrices();
+    this.loadMarketData();
   }
 
   private initializeHistory(): void {
@@ -112,73 +113,74 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = undefined;
     this.connectionStatus = 'connecting';
-    this.connectionMessage = 'Preparando el tablero en vivo…';
-    this.selectedQuotes.forEach(quote => this.priceHistory.set(`USD-${quote}`, []));
+    this.connectionMessage = 'Preparando datos del mercado desde CoinGecko…';
+    this.selectedIds.forEach(id => this.priceHistory.set(id, []));
     this.updateDatasets();
   }
 
-  private subscribeToPrices(): void {
-    this.priceSubscription?.unsubscribe();
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-    }
-    if (this.selectedQuotes.length === 0) {
+  private loadMarketData(): void {
+    this.historySubscription?.unsubscribe();
+    this.autoRefreshSubscription?.unsubscribe();
+    this.retrySubscription?.unsubscribe();
+
+    if (this.selectedIds.length === 0) {
+      this.loading = false;
+      this.updateDatasets();
       return;
     }
+
+    const requests = this.selectedIds.map(id => this.cryptoDataService.getMarketChart(id));
     this.connectionStatus = 'connecting';
-    this.connectionMessage = 'Conectando al flujo en vivo…';
-    this.priceSubscription = this.cryptoDataService.streamPrices(this.selectedQuotes)
-      .subscribe({
-        next: pricePoint => this.handlePrice(pricePoint),
-        error: () => this.handleStreamError()
-      });
-  }
+    this.connectionMessage = 'Actualizando datos desde CoinGecko…';
 
-  private handlePrice(point: PricePoint): void {
-    if (!this.priceHistory.has(point.symbol)) {
-      return;
-    }
-    this.connectionStatus = 'live';
-    this.connectionMessage = 'Flujo en vivo activo';
-    this.errorMessage = undefined;
-    this.loading = false;
-    const history = this.priceHistory.get(point.symbol)!;
-    history.push(point.changePercent);
-    if (history.length > 30) {
-      history.shift();
-    }
-    this.latestPoints.set(point.symbol, point);
-    const timestamp = new Date(point.timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    this.historySubscription = forkJoin(requests).subscribe({
+      next: seriesCollection => {
+        if (seriesCollection.length === 0) {
+          this.loading = false;
+          this.errorMessage = 'No se encontraron datos de mercado para los activos seleccionados.';
+          return;
+        }
+
+        const referenceSeries = seriesCollection[0];
+        this.labels = referenceSeries.map(point => new Date(point.timestamp).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        }));
+
+        seriesCollection.forEach((series, index) => {
+          const assetId = this.selectedIds[index];
+          const percentSeries = series.map(point => point.changePercent);
+          this.priceHistory.set(assetId, percentSeries);
+          if (series.length > 0) {
+            this.latestPoints.set(assetId, series[series.length - 1]);
+          }
+        });
+
+        this.loading = false;
+        this.errorMessage = undefined;
+        this.connectionStatus = 'live';
+        this.connectionMessage = 'Datos obtenidos de CoinGecko';
+        this.updateDatasets();
+        this.startAutoRefresh();
+      },
+      error: () => {
+        this.loading = false;
+        this.errorMessage = 'No fue posible obtener datos de mercado desde CoinGecko.';
+        this.connectionStatus = 'error';
+        this.connectionMessage = 'Sin conexión con CoinGecko. Reintentando…';
+        this.scheduleRetry();
+      }
     });
-    this.labels.push(timestamp);
-    if (this.labels.length > 30) {
-      this.labels.shift();
-    }
-    this.updateDatasets();
-  }
-
-  private handleStreamError(): void {
-    if (this.labels.length === 0) {
-      this.errorMessage = 'No es posible obtener datos en vivo. Verifica que el backend esté desplegado.';
-    }
-    this.connectionStatus = 'error';
-    this.connectionMessage = 'Sin conexión con el backend. Reintentando…';
-    this.priceSubscription = undefined;
-    if (this.selectedQuotes.length > 0) {
-      this.reconnectTimeout = setTimeout(() => this.subscribeToPrices(), 3500);
-    }
   }
 
   private updateDatasets(): void {
     const colors = ['#4f46e5', '#22d3ee', '#14b8a6', '#f97316', '#ef4444', '#a855f7'];
-    const datasets = Array.from(this.priceHistory.entries()).map(([symbol, data], index) => {
+    const datasets = this.selectedIds.map((id, index) => {
+      const data = this.priceHistory.get(id) ?? [];
       const color = colors[index % colors.length];
       return {
         data,
-        label: symbol,
+        label: this.availablePairs.find(pair => pair.id === id)?.label ?? id,
         borderColor: color,
         backgroundColor: `${color}33`,
         tension: 0.35,
@@ -194,16 +196,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get pairSnapshots(): { symbol: string; label: string; price?: number; changePercent?: number }[] {
-    return this.selectedQuotes.map(quote => {
-      const symbol = `USD-${quote}`;
-      const latest = this.latestPoints.get(symbol);
-      const label = this.availablePairs.find(pair => pair.quote === quote)?.label ?? symbol;
+    return this.selectedIds.map(id => {
+      const pair = this.availablePairs.find(item => item.id === id);
+      const latest = this.latestPoints.get(id);
       return {
-        symbol,
-        label,
+        symbol: pair?.quote ?? id.toUpperCase(),
+        label: pair?.label ?? id,
         price: latest?.price,
         changePercent: latest?.changePercent
       };
     });
+  }
+
+  private startAutoRefresh(): void {
+    this.autoRefreshSubscription?.unsubscribe();
+    if (this.selectedIds.length === 0) {
+      return;
+    }
+
+    this.autoRefreshSubscription = timer(60000, 60000)
+      .pipe(switchMap(() => this.cryptoDataService.getSnapshots(this.selectedIds)))
+      .subscribe({
+        next: snapshots => {
+          snapshots.forEach(snapshot => {
+            const previous = this.latestPoints.get(snapshot.id);
+            this.latestPoints.set(snapshot.id, {
+              ...snapshot,
+              changePercent: snapshot.changePercent ?? previous?.changePercent ?? 0
+            });
+          });
+          this.connectionStatus = 'live';
+          this.connectionMessage = 'Datos obtenidos de CoinGecko';
+        },
+        error: () => {
+          this.connectionStatus = 'error';
+          this.connectionMessage = 'Dificultad para refrescar datos desde CoinGecko.';
+        }
+      });
+  }
+
+  private scheduleRetry(): void {
+    this.retrySubscription?.unsubscribe();
+    if (this.selectedIds.length === 0) {
+      return;
+    }
+    this.retrySubscription = timer(6000).subscribe(() => this.loadMarketData());
   }
 }

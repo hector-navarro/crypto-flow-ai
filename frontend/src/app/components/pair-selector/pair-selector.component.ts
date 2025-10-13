@@ -43,7 +43,7 @@ export class PairSelectorComponent implements OnInit, OnChanges, OnDestroy {
     this.subscription?.unsubscribe();
   }
 
-  getLabel(quote: string): string {
-    return this.pairs.find(pair => pair.quote === quote)?.quote ?? quote;
+  getLabel(id: string): string {
+    return this.pairs.find(pair => pair.id === id)?.label ?? id;
   }
 }
