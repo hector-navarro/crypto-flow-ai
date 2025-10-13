@@ -1,0 +1,17 @@
+# Maven
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.nyc_output
+frontend/coverage/
+
+# IDE
+.idea/
+.vscode/
+.DS_Store

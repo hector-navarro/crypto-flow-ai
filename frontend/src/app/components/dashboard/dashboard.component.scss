@@ -1,0 +1,40 @@
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.chart-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.chart-card p {
+  margin: 0.25rem 0 0;
+  color: var(--app-muted-text);
+}
+
+.chart-wrapper {
+  height: 420px;
+}
+
+.chart-placeholder {
+  height: 420px;
+  display: grid;
+  place-items: center;
+  color: var(--app-muted-text);
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

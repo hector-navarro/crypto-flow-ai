@@ -1,0 +1,53 @@
+:root {
+  --app-background: #f4f7fb;
+  --app-card-background: #ffffff;
+  --app-text-color: #1f2933;
+  --app-muted-text: #52616b;
+  --app-border-color: rgba(82, 97, 107, 0.2);
+  --app-accent: #4f46e5;
+  --app-accent-contrast: #ffffff;
+}
+
+.dark-mode {
+  --app-background: #111827;
+  --app-card-background: #1f2937;
+  --app-text-color: #f9fafb;
+  --app-muted-text: #9ca3af;
+  --app-border-color: rgba(156, 163, 175, 0.3);
+  --app-accent: #8b5cf6;
+  --app-accent-contrast: #f9fafb;
+}
+
+.card {
+  background: var(--app-card-background);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 35px rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--app-border-color);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.14);
+}
+
+.button {
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  border-radius: 9999px;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
