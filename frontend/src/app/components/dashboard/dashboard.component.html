@@ -1,26 +1,63 @@
-<section class="grid">
+<section class="dashboard">
   <div class="card chart-card">
-    <header>
-      <div>
-        <h2>Variación porcentual</h2>
-        <p>Comparación en tiempo real de los pares seleccionados</p>
+    <header class="chart-header">
+      <div class="header-copy">
+        <p class="eyebrow">Pulso del mercado</p>
+        <h2>Flujo porcentual en vivo</h2>
+        <p>Monitorea cómo evolucionan tus pares favoritos con un vistazo moderno y minimalista.</p>
       </div>
-      <app-pair-selector
-        [pairs]="availablePairs"
-        [selectedQuotes]="selectedQuotes"
-        (selectionChange)="onSelectionChange($event)">
-      </app-pair-selector>
+      <div class="header-actions">
+        <span class="status-chip" [ngClass]="connectionStatus">
+          <span class="dot"></span>
+          {{ connectionMessage }}
+        </span>
+        <app-pair-selector
+          [pairs]="availablePairs"
+          [selectedQuotes]="selectedQuotes"
+          (selectionChange)="onSelectionChange($event)">
+        </app-pair-selector>
+      </div>
     </header>
-    <div class="chart-wrapper" *ngIf="!loading">
+
+    <div class="insight-grid" *ngIf="pairSnapshots.length > 0">
+      <article class="insight" *ngFor="let snapshot of pairSnapshots">
+        <div class="insight-meta">
+          <span class="symbol">{{ snapshot.symbol }}</span>
+          <span class="label">{{ snapshot.label }}</span>
+        </div>
+        <div class="insight-value" *ngIf="snapshot.price !== undefined; else waitingPrice">
+          {{ snapshot.price | number:'1.2-2' }}
+        </div>
+        <ng-template #waitingPrice>
+          <div class="insight-placeholder">Esperando precio…</div>
+        </ng-template>
+        <div class="insight-change"
+             [ngClass]="{
+               positive: (snapshot.changePercent ?? 0) > 0,
+               negative: (snapshot.changePercent ?? 0) < 0
+             }">
+          <span *ngIf="snapshot.changePercent !== undefined; else waitingChange">
+            {{ snapshot.changePercent | number:'1.2-2' }}%
+          </span>
+        </div>
+        <ng-template #waitingChange>
+          <span class="insight-placeholder">Sin variación</span>
+        </ng-template>
+      </article>
+    </div>
+
+    <div class="chart-wrapper" *ngIf="!loading && !errorMessage; else loadingOrError">
       <canvas baseChart
               [data]="lineChartData"
               [options]="lineChartOptions"
               [type]="lineChartType">
       </canvas>
     </div>
-    <div class="chart-placeholder" *ngIf="loading">
-      Cargando datos...
-    </div>
+
+    <ng-template #loadingOrError>
+      <div class="chart-placeholder" *ngIf="loading">Cargando datos en vivo…</div>
+      <div class="chart-placeholder error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+    </ng-template>
   </div>
   <app-news-panel></app-news-panel>
 </section>

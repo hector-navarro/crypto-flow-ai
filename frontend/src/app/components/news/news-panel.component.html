@@ -1,9 +1,20 @@
 <aside class="card news-panel">
-  <header>
-    <h2>Noticias destacadas</h2>
-    <p>Actualizaciones automáticas cada pocos segundos</p>
+  <header class="news-header">
+    <div>
+      <p class="eyebrow">Pulso informativo</p>
+      <h2>Noticias destacadas</h2>
+      <p class="subtitle">{{ connectionMessage }}</p>
+    </div>
+    <span class="status-chip" [ngClass]="connectionStatus">
+      <span class="dot"></span>
+      {{ connectionStatus === 'live' ? 'En vivo' : connectionStatus === 'connecting' ? 'Conectando' : 'Sin conexión' }}
+    </span>
   </header>
-  <ul>
+
+  <div class="state" *ngIf="loading">Generando titulares personalizados…</div>
+  <div class="state error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+
+  <ul *ngIf="!loading && !errorMessage" class="news-list">
     <li *ngFor="let item of news; trackBy: trackById">
       <div class="headline">{{ item.title }}</div>
       <p class="summary">{{ item.summary }}</p>

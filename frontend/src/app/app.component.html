@@ -1,14 +1,15 @@
 <div class="app-shell" [class.dark-mode]="currentTheme === 'dark'">
   <header class="app-header">
     <div class="branding">
-      <span class="logo">₿</span>
+      <span class="logo" aria-hidden="true">₿</span>
       <div>
+        <p class="eyebrow">Crypto Flow AI</p>
         <h1>{{ title }}</h1>
-        <p>Monitor de criptomonedas en tiempo real</p>
+        <p>Un panel de control visionario para visualizar el comportamiento de los criptoactivos en tiempo real.</p>
       </div>
     </div>
-    <button type="button" class="button" (click)="toggleTheme()">
-      {{ currentTheme === 'dark' ? 'Modo día' : 'Modo noche' }}
+    <button type="button" class="button theme-toggle" (click)="toggleTheme()">
+      {{ currentTheme === 'dark' ? 'Activar modo día' : 'Activar modo noche' }}
     </button>
   </header>
 
