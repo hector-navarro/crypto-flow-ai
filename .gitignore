@@ -3,6 +3,8 @@ backend/target/
 backend/.mvn/
 backend/mvnw
 backend/mvnw.cmd
+backend/out/
+backend/sources.txt
 
 # Node
 frontend/node_modules/

@@ -2,22 +2,21 @@
 
 Aplicación full-stack para monitorizar variaciones porcentuales de pares USD-cripto y noticias del ecosistema en tiempo real.
 
-## Backend (Spring Boot)
+## Backend (Java ligero)
 
 Ubicado en `backend/`.
 
 ### Características
-- API REST para listar pares soportados.
-- Stream Server-Sent Events (SSE) para actualizaciones de precios simuladas en tiempo real.
-- Stream SSE para noticias rotativas.
-- Datos sintéticos generados en memoria, listos para integrarse con APIs reales.
+- API REST muy ligera para listar pares soportados.
+- Flujos Server-Sent Events (SSE) implementados con la clase `HttpServer` del JDK.
+- Datos sintéticos generados en memoria y renovados en cada tick.
+- Sin dependencias externas ni necesidad de Maven/Gradle: basta con un JDK 17.
 
 ### Ejecución
 ```bash
 cd backend
-./mvnw spring-boot:run # si el wrapper está disponible
-# o bien
-mvn spring-boot:run
+javac $(find src/main/java -name "*.java") -d out
+java -cp out com.cryptoflow.CryptoFlowBackendApplication
 ```
 La API queda disponible en `http://localhost:8080`.
 
@@ -27,7 +26,7 @@ El repositorio incluye un flujo de GitHub Actions (`.github/workflows/deploy-bac
 
 1. Habilita GitHub Packages en tu organización o cuenta personal (no requiere configuración adicional si usas el repositorio actual).
 2. En cada `push` a la rama `main` (o ejecutando el workflow manualmente) se construirá la imagen a partir del `Dockerfile` ubicado en `backend/`.
-3. El flujo realizará las pruebas de Maven, construirá la imagen y la subirá a `ghcr.io/<tu-usuario>/crypto-flow-backend` etiquetada con la rama, tag o `sha` correspondiente.
+3. El flujo compila el código con `javac`, construye la imagen y la sube a `ghcr.io/<tu-usuario>/crypto-flow-backend` etiquetada con la rama, tag o `sha` correspondiente.
 4. Para desplegar en tu plataforma preferida (Render, Railway, Fly.io, etc.) únicamente debes referenciar la imagen publicada o descargarla mediante `docker pull`.
 
 Si necesitas autenticación manual, ejecuta (reemplaza `<TOKEN>` por un PAT con permiso `read:packages`):
@@ -81,6 +80,6 @@ Si ya existen cambios listos en la rama `main` y solo necesitas disparar el desp
 > También puedes usar la CLI de GitHub: `gh workflow run deploy.yml`.
 
 ## Arquitectura
-- **Backend:** Java 17, Spring Boot 3, WebFlux para SSE.
+- **Backend:** Java 17 puro con `HttpServer` y SSE artesanales.
 - **Frontend:** Angular 17, ng2-charts + Chart.js para visualizaciones.
 - Comunicación en tiempo real mediante Server-Sent Events.

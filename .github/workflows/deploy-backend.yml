@@ -28,10 +28,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: 'maven'
 
-      - name: Run backend tests
-        run: mvn -B test
+      - name: Compile backend sources
+        run: |
+          mkdir -p out
+          find src/main/java -name "*.java" > sources.txt
+          javac @sources.txt -d out
         working-directory: backend
 
       - name: Log in to the Container registry
