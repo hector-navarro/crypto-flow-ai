@@ -1,0 +1,78 @@
+<section class="candlestick-panel" [formGroup]="settingsForm">
+  <header class="panel-header">
+    <div>
+      <p class="eyebrow">Profundidad técnica</p>
+      <h3>Gráfico de velas</h3>
+      <p class="subtitle">Explora la acción del precio con indicadores clave y zonas de presión.</p>
+    </div>
+    <div class="settings-form" aria-label="Opciones del gráfico">
+      <label class="pair-select">
+        <span>Activo</span>
+        <select formControlName="pairId">
+          <option *ngFor="let pair of pairs" [value]="pair.id">{{ pair.label }}</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <div class="indicator-toggle" role="group" aria-label="Indicadores técnicos">
+    <label>
+      <input type="checkbox" formControlName="showSma" />
+      Media móvil (20)
+    </label>
+    <label>
+      <input type="checkbox" formControlName="showEma" />
+      EMA (12)
+    </label>
+    <label>
+      <input type="checkbox" formControlName="showBollinger" />
+      Bandas de Bollinger
+    </label>
+    <label>
+      <input type="checkbox" formControlName="showPressure" />
+      Zonas de presión
+    </label>
+  </div>
+
+  <div class="chart-surface" *ngIf="hasData; else stateTemplate">
+    <svg
+      class="candlestick-chart"
+      [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+      preserveAspectRatio="none">
+      <g class="grid">
+        <line *ngFor="let tick of priceTicks" x1="0" [attr.y1]="tick.y" [attr.x2]="chartWidth" [attr.y2]="tick.y"></line>
+      </g>
+      <g class="pressure">
+        <path *ngFor="let area of pressureAreas" [attr.d]="area.path" [attr.class]="area.type"></path>
+      </g>
+      <path *ngIf="bollingerFillPath" class="bollinger-fill" [attr.d]="bollingerFillPath"></path>
+      <path *ngIf="bollingerUpperPath" class="bollinger-line upper" [attr.d]="bollingerUpperPath"></path>
+      <path *ngIf="bollingerLowerPath" class="bollinger-line lower" [attr.d]="bollingerLowerPath"></path>
+      <path *ngIf="smaPath" class="sma-line" [attr.d]="smaPath"></path>
+      <path *ngIf="emaPath" class="ema-line" [attr.d]="emaPath"></path>
+      <g class="candles">
+        <g *ngFor="let candle of candleShapes">
+          <line class="wick" [attr.x1]="candle.wickX" [attr.y1]="candle.highY" [attr.x2]="candle.wickX" [attr.y2]="candle.lowY"></line>
+          <rect
+            class="body"
+            [ngClass]="candle.bullish ? 'bullish' : 'bearish'"
+            [attr.x]="candle.x"
+            [attr.y]="Math.min(candle.openY, candle.closeY)"
+            [attr.width]="candle.width"
+            [attr.height]="Math.max(Math.abs(candle.openY - candle.closeY), 2)"></rect>
+        </g>
+      </g>
+      <g class="price-labels">
+        <text *ngFor="let tick of priceTicks" [attr.x]="chartWidth - 12" [attr.y]="tick.y - 6">{{ tick.value | number:'1.2-2' }}</text>
+      </g>
+      <g class="time-labels">
+        <text *ngFor="let label of timeLabels" [attr.x]="label.x" [attr.y]="chartHeight - 8">{{ label.label }}</text>
+      </g>
+    </svg>
+  </div>
+
+  <ng-template #stateTemplate>
+    <div class="chart-placeholder" *ngIf="loading">Cargando velas más recientes…</div>
+    <div class="chart-placeholder error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+  </ng-template>
+</section>

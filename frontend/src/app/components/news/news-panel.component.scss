@@ -101,6 +101,17 @@
   padding-bottom: 0;
 }
 
+.news-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  color: inherit;
+}
+
+.news-link:hover .headline {
+  color: var(--app-accent);
+}
+
 .headline {
   font-weight: 700;
   margin-bottom: 0.35rem;
@@ -119,6 +130,12 @@
   font-size: 0.8rem;
   color: var(--app-muted-text);
   margin-top: 0.75rem;
+}
+
+.cta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--app-accent);
 }
 
 @media (max-width: 768px) {

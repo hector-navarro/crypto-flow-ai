@@ -1,0 +1,17 @@
+{
+  "name": "Crypto Flow AI",
+  "short_name": "CryptoFlow",
+  "lang": "es",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "description": "Panel progresivo para seguir el mercado cripto con indicadores avanzados.",
+  "icons": [
+    {
+      "src": "assets/icons/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

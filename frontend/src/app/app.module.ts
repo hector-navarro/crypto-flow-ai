@@ -8,6 +8,8 @@ import { AppComponent } from './app.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PairSelectorComponent } from './components/pair-selector/pair-selector.component';
 import { NewsPanelComponent } from './components/news/news-panel.component';
+import { CandlestickPanelComponent } from './components/candlestick/candlestick-panel.component';
+import { NewsArticleComponent } from './components/news/article/news-article.component';
 import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
@@ -15,7 +17,9 @@ import { NgChartsModule } from 'ng2-charts';
     AppComponent,
     DashboardComponent,
     PairSelectorComponent,
-    NewsPanelComponent
+    NewsPanelComponent,
+    CandlestickPanelComponent,
+    NewsArticleComponent
   ],
   imports: [
     BrowserModule,
