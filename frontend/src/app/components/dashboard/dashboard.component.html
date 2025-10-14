@@ -19,6 +19,25 @@
       </div>
     </header>
 
+    <nav class="chart-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab === 'flow'"
+        [class.active]="activeTab === 'flow'"
+        (click)="setActiveTab('flow')">
+        Rendimiento porcentual
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab === 'candles'"
+        [class.active]="activeTab === 'candles'"
+        (click)="setActiveTab('candles')">
+        Velas e indicadores
+      </button>
+    </nav>
+
     <div class="insight-grid" *ngIf="pairSnapshots.length > 0">
       <article class="insight" *ngFor="let snapshot of pairSnapshots">
         <div class="insight-meta">
@@ -46,13 +65,25 @@
       </article>
     </div>
 
-    <div class="chart-wrapper" *ngIf="!loading && !errorMessage; else loadingOrError">
-      <canvas baseChart
-              [data]="lineChartData"
-              [options]="lineChartOptions"
-              [type]="lineChartType">
-      </canvas>
-    </div>
+    <ng-container [ngSwitch]="activeTab">
+      <ng-container *ngSwitchCase="'flow'">
+        <div class="chart-wrapper" *ngIf="!loading && !errorMessage; else loadingOrError">
+          <canvas baseChart
+                  [data]="lineChartData"
+                  [options]="lineChartOptions"
+                  [type]="lineChartType">
+          </canvas>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'candles'">
+        <div class="candlestick-container">
+          <app-candlestick-panel
+            [pairs]="availablePairs"
+            [defaultPairId]="defaultCandlestickPair">
+          </app-candlestick-panel>
+        </div>
+      </ng-container>
+    </ng-container>
 
     <ng-template #loadingOrError>
       <div class="chart-placeholder" *ngIf="loading">Cargando datos en vivo…</div>

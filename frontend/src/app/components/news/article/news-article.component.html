@@ -1,0 +1,21 @@
+<section class="article-page">
+  <button type="button" class="back-button" (click)="goBack()">
+    ← Volver al panel
+  </button>
+
+  <div class="state" *ngIf="loading">Cargando noticia seleccionada…</div>
+  <div class="state error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+
+  <article *ngIf="!loading && article" class="article-card">
+    <header>
+      <p class="source">{{ article.source }} · {{ article.publishedAt | date:'medium' }}</p>
+      <h1>{{ article.title }}</h1>
+    </header>
+    <p class="summary">{{ article.summary }}</p>
+    <p class="content">{{ article.content }}</p>
+
+    <a class="external-link" [href]="article.url" target="_blank" rel="noopener">
+      Leer en la fuente original ↗
+    </a>
+  </article>
+</section>

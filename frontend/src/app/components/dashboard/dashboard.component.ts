@@ -26,6 +26,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   errorMessage?: string;
   availablePairs: CryptoPair[] = [];
   selectedIds: string[] = [];
+  candlestickPairId?: string;
+  activeTab: 'flow' | 'candles' = 'flow';
   priceHistory = new Map<string, number[]>();
   latestPoints = new Map<string, PricePoint>();
   labels: string[] = [];
@@ -82,6 +84,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       next: pairs => {
         this.availablePairs = pairs;
         this.selectedIds = pairs.slice(0, 3).map(pair => pair.id);
+        this.candlestickPairId = this.selectedIds[0] ?? pairs[0]?.id;
         this.initializeHistory();
         this.loadMarketData();
       },
@@ -102,8 +105,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onSelectionChange(ids: string[]): void {
     this.selectedIds = ids;
+    this.candlestickPairId = this.selectedIds[0] ?? this.candlestickPairId ?? this.availablePairs[0]?.id;
     this.initializeHistory();
     this.loadMarketData();
+  }
+
+  setActiveTab(tab: 'flow' | 'candles'): void {
+    this.activeTab = tab;
+  }
+
+  get defaultCandlestickPair(): string | undefined {
+    return this.candlestickPairId ?? this.availablePairs[0]?.id;
   }
 
   private initializeHistory(): void {

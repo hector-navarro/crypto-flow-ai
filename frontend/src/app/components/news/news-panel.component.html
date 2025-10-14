@@ -16,12 +16,15 @@
 
   <ul *ngIf="!loading && !errorMessage" class="news-list">
     <li *ngFor="let item of news; trackBy: trackById">
-      <div class="headline">{{ item.title }}</div>
-      <p class="summary">{{ item.summary }}</p>
-      <div class="meta">
-        <span>{{ item.source }}</span>
-        <time>{{ item.publishedAt | date:'shortTime' }}</time>
-      </div>
+      <a class="news-link" [routerLink]="['/news', item.id]">
+        <div class="headline">{{ item.title }}</div>
+        <p class="summary">{{ item.summary }}</p>
+        <div class="meta">
+          <span>{{ item.source }}</span>
+          <time>{{ item.publishedAt | date:'shortTime' }}</time>
+        </div>
+        <span class="cta">Leer noticia completa ↗</span>
+      </a>
     </li>
   </ul>
 </aside>

@@ -5,6 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 import { CryptoPair } from '../models/crypto-pair.model';
 import { PricePoint } from '../models/price-point.model';
 import { NewsItem } from '../models/news-item.model';
+import { CandlestickPoint } from '../models/candlestick-point.model';
 
 interface CoinGeckoMarketResponse {
   id: string;
@@ -48,6 +49,7 @@ interface CryptoCompareNewsItem {
   id: string | number;
   title: string;
   body: string;
+  url: string;
   source_info?: {
     name?: string;
   };
@@ -168,11 +170,41 @@ export class CryptoDataService {
           response.Data.slice(0, limit).map(item => ({
             id: item.id.toString(),
             title: item.title,
-            summary: this.cleanSummary(item.body),
+            summary: this.buildSummary(item.body),
             source: item.source_info?.name ?? 'CryptoCompare',
-            publishedAt: new Date(item.published_on * 1000).toISOString()
+            publishedAt: new Date(item.published_on * 1000).toISOString(),
+            content: this.cleanContent(item.body),
+            url: item.url
           }))
         )
+      );
+  }
+
+  getNewsDetail(id: string): Observable<NewsItem | undefined> {
+    return this.getNews(30).pipe(map(items => items.find(item => item.id === id)));
+  }
+
+  getOhlc(id: string, days = 7): Observable<CandlestickPoint[]> {
+    const params = new HttpParams({
+      fromObject: {
+        vs_currency: 'usd',
+        days: days.toString()
+      }
+    });
+
+    return this.http
+      .get<[number, number, number, number, number][]>(`${this.coinGeckoApi}/coins/${id}/ohlc`, { params })
+      .pipe(
+        map(series =>
+          series.map(point => ({
+            timestamp: new Date(point[0]).toISOString(),
+            open: point[1],
+            high: point[2],
+            low: point[3],
+            close: point[4]
+          }))
+        ),
+        catchError(() => of<CandlestickPoint[]>([]))
       );
   }
 
@@ -242,7 +274,15 @@ export class CryptoDataService {
     );
   }
 
-  private cleanSummary(value: string): string {
+  private buildSummary(value: string, maxLength = 140): string {
+    const cleanValue = this.cleanContent(value);
+    if (cleanValue.length <= maxLength) {
+      return cleanValue;
+    }
+    return `${cleanValue.slice(0, maxLength).trim()}…`;
+  }
+
+  private cleanContent(value: string): string {
     return value
       .replace(/<[^>]*>/g, ' ')
       .replace(/&[a-z#0-9]+;/gi, ' ')
